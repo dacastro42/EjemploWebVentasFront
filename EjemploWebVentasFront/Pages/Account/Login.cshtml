@@ -1,0 +1,28 @@
+﻿@page
+@model EjemploWebVentasFront.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h2>Iniciar Sesión</h2>
+
+<form method="post">
+    <div>
+        <label>Usuario</label>
+        <input asp-for="Username" />
+    </div>
+
+    <div>
+        <label>Contraseña</label>
+        <input asp-for="Password" type="password" />
+    </div>
+
+    <br />
+
+    <button type="submit">Ingresar</button>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <p style="color:red">@Model.ErrorMessage</p>
+    }
+</form>

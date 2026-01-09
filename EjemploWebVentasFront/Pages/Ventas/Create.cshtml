@@ -1,0 +1,145 @@
+﻿@page
+@model EjemploWebVentasFront.Pages.Ventas.CreateModel
+@{
+    ViewData["Title"] = "Crear Venta";
+}
+
+<h2>Crear Venta</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+{
+    <p style="color:green">@Model.SuccessMessage</p>
+}
+
+<form method="post" id="ventaForm">
+    <!-- Aquí guardamos el carrito en JSON para mandarlo al backend -->
+    <input type="hidden" asp-for="DetallesJson" id="DetallesJson" />
+
+    <h3>Carros disponibles</h3>
+
+    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+        @foreach (var c in Model.Carros)
+        {
+            <div style="border:1px solid #ccc; padding:12px; width:260px;">
+                <div><b>@c.marca @c.modelo</b></div>
+                <div>Año: @c.anio</div>
+                <div>Precio: <span class="precio" data-precio="@c.precioC">@c.precioC</span></div>
+
+                <hr />
+
+                <label>Cantidad</label><br />
+                <input type="number" min="0" value="0"
+                       class="qty"
+                       data-carroid="@c.idC"
+                       data-precio="@c.precioC"
+                       style="width:100%;" />
+
+                <button type="button"
+                        style="margin-top:8px; width:100%;"
+                        onclick="addToCart(@c.idC, @c.precioC)">
+                    Agregar a venta
+                </button>
+            </div>
+        }
+    </div>
+
+    <hr />
+
+    <h3>Detalle de venta</h3>
+    <div id="cartContainer"></div>
+
+    <h3>Total: <span id="totalSpan">0</span></h3>
+
+    <button type="submit" style="margin-top:12px;">Guardar Venta</button>
+</form>
+
+<p style="margin-top:10px;">
+    <a href="/Ventas/Index">Ver ventas</a>
+</p>
+
+<script>
+    // carrito: { carroId: cantidad, precio }
+    const cart = {};
+
+    function money(n) {
+        // simple, sin formato avanzado
+        return Number(n).toFixed(2);
+    }
+
+    function addToCart(carroId, precio) {
+        const qtyInput = document.querySelector(`.qty[data-carroid="${carroId}"]`);
+        const cantidad = parseInt(qtyInput.value || "0", 10);
+
+        if (cantidad <= 0) {
+            alert("La cantidad debe ser mayor a 0");
+            return;
+        }
+
+        cart[carroId] = { cantidad, precio };
+        renderCart();
+    }
+
+    function removeFromCart(carroId) {
+        delete cart[carroId];
+        renderCart();
+    }
+
+    function updateQty(carroId, value) {
+        const cantidad = parseInt(value || "0", 10);
+        if (cantidad <= 0) {
+            removeFromCart(carroId);
+            return;
+        }
+        cart[carroId].cantidad = cantidad;
+        renderCart();
+    }
+
+    function renderCart() {
+        const container = document.getElementById("cartContainer");
+        container.innerHTML = "";
+
+        let total = 0;
+
+        Object.keys(cart).forEach(id => {
+            const item = cart[id];
+            const subtotal = item.cantidad * item.precio;
+            total += subtotal;
+
+            const row = document.createElement("div");
+            row.style.border = "1px solid #ddd";
+            row.style.padding = "10px";
+            row.style.marginBottom = "8px";
+
+            row.innerHTML = `
+                <div><b>CarroId:</b> ${id}</div>
+                <div>
+                    <b>Cantidad:</b>
+                    <input type="number" min="0" value="${item.cantidad}"
+                           onchange="updateQty(${id}, this.value)" />
+                </div>
+                <div><b>Precio:</b> ${money(item.precio)}</div>
+                <div><b>Subtotal:</b> ${money(subtotal)}</div>
+                <button type="button" onclick="removeFromCart(${id})">Quitar</button>
+            `;
+
+            container.appendChild(row);
+        });
+
+        document.getElementById("totalSpan").innerText = money(total);
+
+        // Convertir cart a lista de detalles que espera el backend
+        const detalles = Object.keys(cart).map(id => ({
+            carroId: parseInt(id, 10),
+            cantidad: cart[id].cantidad
+        }));
+
+        document.getElementById("DetallesJson").value = JSON.stringify(detalles);
+    }
+
+    // Inicializa hidden
+    renderCart();
+</script>
