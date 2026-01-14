@@ -31,8 +31,12 @@ namespace EjemploWebVentasFront.Pages.Admin.Ventas
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // 1️⃣ Validar token
-            var token = GetToken();
+            var token = HttpContext.Session.GetString("ACCESS_TOKEN");
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return RedirectToPage("/Account/Login");
+            }
+           // var token = GetToken();
             if (string.IsNullOrWhiteSpace(token))
                 return RedirectToPage("/Account/Login");
 

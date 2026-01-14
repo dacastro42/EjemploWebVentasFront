@@ -76,7 +76,16 @@ namespace EjemploWebVentasFront.Pages.Ventas
 
                 return Page();
             }
+            //public IActionResult OnGet()
+            //{
+            //    var token = HttpContext.Session.GetString("ACCESS_TOKEN");
+            //    if (string.IsNullOrWhiteSpace(token))
+            //    {
+            //        return RedirectToPage("/Account/Login");
+            //    }
 
+            //    return Page();
+            //}
             public async Task<IActionResult> OnPostAsync()
             {
                 var token = GetToken();

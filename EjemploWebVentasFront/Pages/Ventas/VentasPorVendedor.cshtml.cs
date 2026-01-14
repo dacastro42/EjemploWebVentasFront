@@ -49,7 +49,13 @@ namespace EjemploWebVentasFront.Pages.Ventas
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = GetToken();
+            var token = HttpContext.Session.GetString("ACCESS_TOKEN");
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return RedirectToPage("/Account/Login");
+            }
+
+            //var token = GetToken();
             if (string.IsNullOrWhiteSpace(token))
                 return RedirectToPage("/Account/Login");
 
