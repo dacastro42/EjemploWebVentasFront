@@ -83,14 +83,26 @@ namespace EjemploWebVentasFront.Pages.Account
             {
                 HttpContext.Session.SetInt32("VENDEDOR_ID", vendedorId);
             }
-
+            var rol = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ??
+                      jwt.Claims.FirstOrDefault(c => c.Type == "role")?.Value ??
+                      "VENDEDOR";
             // Guardar token en Session
             HttpContext.Session.SetString(
                 _configuration["Jwt:SessionKey"]!,
                 token
             );
-
-            return RedirectToPage("/Ventas/Create");
+            // Guardar ROL en Session
+            HttpContext.Session.SetString("ROL", rol);
+            //return RedirectToPage("/Ventas/Create");
+            // Redirección según rol
+            if (rol == "ADMIN")
+            {
+                return RedirectToPage("/Admin/Ventas/Index"); // luego la creamos
+            }
+            else
+            {
+                return RedirectToPage("/Ventas/Create");
+            }
         }
     }
 }

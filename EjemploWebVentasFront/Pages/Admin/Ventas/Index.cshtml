@@ -1,0 +1,53 @@
+﻿
+@page
+@model EjemploWebVentasFront.Pages.Admin.Ventas.AdminVentasIndexModel
+@{
+    ViewData["Title"] = "Ventas (Administrador)";
+}
+
+<h2>Ventas - Administrador</h2>
+
+<p>
+    <a href="/Ventas/Create">Ir a Crear Venta</a>
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+else if (Model.Ventas.Count == 0)
+{
+    <p>No hay ventas registradas.</p>
+}
+else
+{
+    <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
+        <thead>
+            <tr>
+                <th>ID Venta</th>
+                <th>ID Vendedor</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>IVA</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var v in Model.Ventas)
+        {
+            <tr>
+                <td>@v.IdVentas</td>
+                <td>@v.VendedorId</td>
+                <td>@v.FechaVenta</td>
+                <td>@v.TotalVenta</td>
+                <td>@v.Iva</td>
+                <td>
+                    <a href="/Admin/Ventas/Details?id=@v.IdVentas">
+                        Ver detalle
+                    </a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
