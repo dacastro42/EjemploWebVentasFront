@@ -97,7 +97,8 @@ namespace EjemploWebVentasFront.Pages.Account
             // Redirección según rol
             if (rol == "ADMIN")
             {
-                return RedirectToPage("/Admin/Ventas/Index"); // luego la creamos
+                return RedirectToPage("/Admin/Dashboard");
+                //return RedirectToPage("/Admin/Ventas/Index"); 
             }
             else
             {

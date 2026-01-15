@@ -1,0 +1,65 @@
+﻿@page
+@model EjemploWebVentasFront.Pages.Admin.Ventas.DetailsModel
+@{
+    ViewData["Title"] = "Detalle de venta";
+}
+
+<p>
+    <a href="/Admin/Ventas/Index">⬅ Volver</a> |
+    <a href="/Admin/Dashboard">🏠 Dashboard</a> |
+    <a href="/Account/Logout">Cerrar sesión</a>
+</p>
+
+<h2>Detalle de venta</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+else if (Model.Venta == null)
+{
+    <p>No se encontró la venta.</p>
+}
+else
+{
+    <div style="border:1px solid #ccc; padding:12px; margin-bottom:12px;">
+        <div><b>Venta:</b> @Model.Venta.IdVentas</div>
+        <div><b>Vendedor:</b> @Model.Venta.VendedorId</div>
+        <div><b>Fecha:</b> @Model.Venta.FechaVenta</div>
+        <div><b>Total:</b> @Model.Venta.TotalVenta</div>
+        <div><b>IVA:</b> @Model.Venta.Iva</div>
+    </div>
+
+    <h3>Detalles</h3>
+
+    <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
+        <thead>
+            <tr>
+                <th>Carro</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Venta.Detalles)
+            {
+                <tr>
+                    <td>
+                        @if (d.Carro != null)
+                        {
+                            <span>@d.Carro.Marca @d.Carro.Modelo (@d.Carro.Anio)</span>
+                        }
+                        else
+                        {
+                            <span>CarroId: @d.CarroId</span>
+                        }
+                    </td>
+                    <td>@d.Cantidad</td>
+                    <td>@d.PrecioUnitario</td>
+                    <td>@d.Subtotal</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

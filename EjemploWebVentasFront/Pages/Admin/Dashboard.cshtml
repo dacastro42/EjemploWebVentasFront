@@ -1,0 +1,154 @@
+﻿@page
+@model EjemploWebVentasFront.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>Administrador</h2>
+
+<p>
+    <a href="/Admin/Ventas/Index">📋 Ver todas las ventas</a> |
+    <a href="/Ventas/Create">➕ Ir a crear venta</a> |
+    <a href="/Account/Logout">Cerrar sesión</a>
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+
+<h3>Reportes</h3>
+
+<div style="display:flex; flex-wrap:wrap; gap:12px;">
+   
+    <div style="border:1px solid #ccc; padding:12px; width:320px;">
+        <b>Mayor venta</b>
+        <!--   <pre>@(Model.MayorVenta?.ToString() ?? "Sin datos")</pre>//-->
+        @if (Model.MayorVenta.HasValue)
+        {
+            <div>
+                <div><b>ID Venta:</b> @Model.MayorVenta.Value.GetProperty("idVentas")</div>
+                <div><b>Fecha:</b> @Model.MayorVenta.Value.GetProperty("fechaVenta").GetString()</div>
+                <div>
+                    <b>Total:</b> $
+                    @string.Format("{0:N0}",
+                    Model.MayorVenta.Value.GetProperty("totalVenta").GetDecimal())
+            </div>
+        </div>
+                }
+        else
+        {
+            <span>Sin datos</span>
+        }
+    </div>
+
+
+    <div style="border:1px solid #ccc; padding:12px; width:320px;">
+        <b>Vendedor top</b>
+        
+        <!--  <pre>@(Model.VendedorTop?.ToString() ?? "Sin datos")</pre>//-->
+        @if (Model.VendedorTop.HasValue)
+        {
+            var vendedor = Model.VendedorTop.Value.GetProperty("vendedor");
+            <div>
+                <div><b>Vendedor:</b> @vendedor.GetProperty("nombre1V").GetString()</div>
+                <div><b>ID:</b> @vendedor.GetProperty("idV")</div>
+                <div>
+                    <b>Total vendido:</b> $
+                    @string.Format("{0:N0}",
+                    Model.VendedorTop.Value.GetProperty("totalVendido").GetDecimal())
+            </div>
+        </div>
+                }
+        else
+        {
+            <span>Sin datos</span>
+        }
+    </div>
+    <form method="get" style="margin: 12px 0; display:flex; align-items:center; gap:10px;">
+        <label><b>Año:</b></label>
+        <input type="number" name="Anio" value="@(Model.Anio ?? DateTime.Now.Year)" min="2000" max="2100" style="width:90px;" />
+
+        <label><b>Mes:</b></label>
+        <select name="Mes">
+            <option value="">-- Selecciona --</option>
+            @for (int m = 1; m <= 12; m++)
+            {
+                <option value="@m" selected="@(Model.Mes == m)">
+                    @m
+                </option>
+            }
+        </select>
+
+        <button type="submit">Consultar</button>
+    </form>
+    <b>Total del mes</b>
+    
+    <!-- <pre>@(Model.TotalMes?.ToString() ?? "Sin datos")</pre>//-->
+
+    @if (Model.TotalMes.HasValue)
+    {
+        <div>
+            <div>
+                <b>Periodo:</b>
+                @Model.TotalMes.Value.GetProperty("mes") /
+                @Model.TotalMes.Value.GetProperty("anio")
+            </div>
+
+            <div>
+                <b>Ventas realizadas:</b>
+                @Model.TotalMes.Value.GetProperty("cantidadVentas")
+            </div>
+
+            <div>
+                <b>Total vendido:</b> $
+                @string.Format("{0:N0}",
+                Model.TotalMes.Value.GetProperty("totalVendido").GetDecimal())
+        </div>
+    </div>
+        }
+    else
+    {
+        <span>Sin datos</span>
+    }
+
+    <div style="border:1px solid #ccc; padding:12px; width:320px;">
+        <b>Carro más vendido</b>
+        
+        <!--  <pre>@(Model.CarroMasVendido?.ToString() ?? "Sin datos")</pre>//-->
+        @if (Model.CarroMasVendido.HasValue && Model.CarroMasVendido.Value.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            var root = Model.CarroMasVendido.Value;
+
+            if (root.TryGetProperty("carro", out var carro))
+            {
+                <div>
+                    <div><b>Carro:</b> @carro.GetProperty("marca").GetString() @carro.GetProperty("modelo").GetString()</div>
+                    <div><b>Año:</b> @carro.GetProperty("anio")</div>
+                    <div><b>ID Carro:</b> @carro.GetProperty("idC")</div>
+
+                    @if (root.TryGetProperty("unidades", out var unidades))
+                    {
+                        <div><b>Unidades vendidas:</b> @unidades</div>
+                    }
+
+                    @if (root.TryGetProperty("totalFacturado", out var totalFacturado))
+                    {
+                        <div>
+                            <b>Total facturado:</b> $
+                            @string.Format("{0:N0}", totalFacturado.GetDecimal())
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <span>Sin datos</span>
+            }
+        }
+        else
+        {
+            <span>Sin datos</span>
+        }
+    </div>
+</div>
