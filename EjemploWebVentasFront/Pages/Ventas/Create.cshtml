@@ -4,142 +4,610 @@
     ViewData["Title"] = "Crear Venta";
 }
 
-<h2>Crear Venta</h2>
-<a href="/Account/Logout">Cerrar sesión</a>
-@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
-{
-    <p style="color:red">@Model.ErrorMessage</p>
-}
-@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
-{
-    <p style="color:green">@Model.SuccessMessage</p>
-}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<form method="post" id="ventaForm">
-    <!-- Aquí guardamos el carrito en JSON para mandarlo al backend -->
-    <input type="hidden" asp-for="DetallesJson" id="DetallesJson" />
+<style>
+    :root {
+        --primary: #1a365d;
+        --primary-light: #2c5282;
+        --accent: #ed8936;
+        --success: #38a169;
+        --danger: #e53e3e;
+        --bg-light: #f7fafc;
+        --card-bg: #ffffff;
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+        --border: #e2e8f0;
+    }
 
-    <h3>Carros disponibles</h3>
+    * {
+        box-sizing: border-box;
+    }
 
-    <div style="display:flex; flex-wrap:wrap; gap:12px;">
-        @foreach (var c in Model.Carros)
-        {
-            <div style="border:1px solid #ccc; padding:12px; width:260px;">
-                <div><b>@c.marca @c.modelo</b></div>
-                <div>Año: @c.anio</div>
-                <div>Precio: <span class="precio" data-precio="@c.precioC">@c.precioC</span></div>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
 
-                <hr />
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
 
-                <label>Cantidad</label><br />
-                <input type="number" min="0" value="0"
-                       class="qty"
-                       data-carroid="@c.idC"
-                       data-precio="@c.precioC"
-                       style="width:100%;" />
+    /* Header */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    }
 
-                <button type="button"
-                        style="margin-top:8px; width:100%;"
-                        onclick="addToCart(@c.idC, @c.precioC)">
-                    Agregar a venta
-                </button>
-            </div>
+        .header h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
+            .header h1 i {
+                color: var(--accent);
+            }
+
+    .logout-btn {
+        color: var(--danger);
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .logout-btn:hover {
+            transform: translateX(-3px);
+        }
+
+    /* Alertas */
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideIn 0.3s ease;
+    }
+
+    .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left: 4px solid var(--success);
+    }
+
+    .alert-danger {
+        background: #fed7d7;
+        color: #742a2a;
+        border-left: 4px solid var(--danger);
+    }
+
+    
+
+    /* Grid Layout */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+    }
+
+    /* Sección Carros */
+    .section-title {
+        font-size: 1.3rem;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+    .cars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .car-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border: 1px solid var(--border);
+    }
+
+        .car-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+    .car-image {
+        height: 160px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+    }
+
+    .car-info {
+        padding: 20px;
+    }
+
+    .car-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .car-details {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+        .car-details span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    .car-price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--success);
+        margin-bottom: 16px;
+    }
+
+    .car-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .qty-input {
+        width: 70px;
+        padding: 10px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: border-color 0.3s;
+    }
+
+        .qty-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+    .btn-add {
+        flex: 1;
+        padding: 12px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-add:hover {
+            background: var(--primary-light);
+            transform: scale(1.02);
+        }
+
+        .btn-add:active {
+            transform: scale(0.98);
+        }
+
+    /* Carrito Sidebar */
+    .cart-panel {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        padding: 24px;
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+
+    .cart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--border);
+    }
+
+        .cart-header i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .cart-header h3 {
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+    .cart-count {
+        background: var(--accent);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .cart-items {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: var(--bg-light);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    
+
+    .cart-item-info {
+        flex: 1;
+    }
+
+    .cart-item-name {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.95rem;
+    }
+
+    .cart-item-qty {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .cart-item-price {
+        font-weight: 700;
+        color: var(--success);
+        margin-right: 10px;
+    }
+
+    .btn-remove {
+        background: var(--danger);
+        color: white;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+        .btn-remove:hover {
+            background: #c53030;
+            transform: scale(1.1);
+        }
+
+    .cart-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-muted);
+    }
+
+        .cart-empty i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+    /* Totales */
+    .cart-totals {
+        border-top: 2px solid var(--border);
+        padding-top: 16px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: var(--text-muted);
+    }
+
+        .total-row.grand-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            margin-top: 12px;
+        }
+
+    .btn-checkout {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--success) 0%, #2f855a 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
+        }
+
+        .btn-checkout:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-panel {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .cars-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .header {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-car"></i> Crear Venta</h1>
+        <a href="/Account/Logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
     </div>
 
-    <hr />
+    <!-- Alertas -->
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            @Model.SuccessMessage
+        </div>
+    }
 
-    <h3>Detalle de venta</h3>
-    <div id="cartContainer"></div>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            @Model.ErrorMessage
+        </div>
+    }
 
-    <h3>Total: <span id="totalSpan">0</span></h3>
+    <form method="post" id="ventaForm">
+        <input type="hidden" asp-for="DetallesJson" id="detallesJson" />
 
-    <button type="submit" style="margin-top:12px;">Guardar Venta</button>
-</form>
+        <div class="main-grid">
+            <!-- Sección de Carros -->
+            <div>
+                <h2 class="section-title">
+                    <i class="fas fa-th-large"></i>
+                    Carros disponibles
+                </h2>
+
+                <div class="cars-grid">
+                    @foreach (var carro in Model.Carros)
+                    {
+                        <div class="car-card" data-carro-id="@carro.idC" data-precio="@carro.precioC" data-nombre="@carro.marca @carro.modelo">
+                            <div class="car-image">
+                                <i class="fas fa-car-side"></i>
+                            </div>
+                            <div class="car-info">
+                                <div class="car-name">@carro.marca @carro.modelo</div>
+                                <div class="car-details">
+                                    <span><i class="fas fa-calendar"></i> @carro.anio</span>
+                                </div>
+                                <div class="car-price">$@carro.precioC.ToString("N0", new System.Globalization.CultureInfo("es-CL"))</div>
+                                <div class="car-actions">
+                                    <input type="number" class="qty-input" value="0" min="0" max="99" id="qty_@carro.idC" />
+                                    <button type="button" class="btn-add" onclick="agregarCarro(@carro.idC)">
+                                        <i class="fas fa-plus"></i> Agregar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Carrito -->
+            <div class="cart-panel">
+                <div class="cart-header">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Detalle de Venta</h3>
+                    <span class="cart-count" id="cartCount">0</span>
+                </div>
+
+                <div class="cart-items" id="cartItems">
+                    <div class="cart-empty">
+                        <i class="fas fa-shopping-basket"></i>
+                        <p>Tu carrito está vacío</p>
+                        <small>Agrega carros para comenzar</small>
+                    </div>
+                </div>
+
+                <div class="cart-totals">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$0</span>
+                    </div>
+                    <div class="total-row">
+                        <span>IVA (19%)</span>
+                        <span id="iva">$0</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>TOTAL</span>
+                        <span id="total">$0</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-checkout" id="btnCheckout" disabled>
+                    <i class="fas fa-check"></i> Finalizar Venta
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
 
 <p style="margin-top:10px;">
     <a href="/Ventas/VentasPorVendedor">Ver mis ventas</a>
 </p>
 
+
 <script>
-    // carrito: { carroId: cantidad, precio }
-    const cart = {};
+    // Carrito en memoria
+    let carrito = [];
 
-    function money(n) {
-        // simple, sin formato avanzado
-        return Number(n).toFixed(2);
-    }
-
-    function addToCart(carroId, precio) {
-        const qtyInput = document.querySelector(`.qty[data-carroid="${carroId}"]`);
-        const cantidad = parseInt(qtyInput.value || "0", 10);
+    function agregarCarro(carroId) {
+        const card = document.querySelector(`[data-carro-id="${carroId}"]`);
+        const qtyInput = document.getElementById(`qty_${carroId}`);
+        const cantidad = parseInt(qtyInput.value) || 0;
 
         if (cantidad <= 0) {
-            alert("La cantidad debe ser mayor a 0");
+            alert('Por favor ingresa una cantidad mayor a 0');
             return;
         }
 
-        cart[carroId] = { cantidad, precio };
-        renderCart();
-    }
+        const nombre = card.dataset.nombre;
+        const precio = parseFloat(card.dataset.precio);
 
-    function removeFromCart(carroId) {
-        delete cart[carroId];
-        renderCart();
-    }
-
-    function updateQty(carroId, value) {
-        const cantidad = parseInt(value || "0", 10);
-        if (cantidad <= 0) {
-            removeFromCart(carroId);
-            return;
+        // Buscar si ya existe
+        const existente = carrito.find(item => item.carroId === carroId);
+        if (existente) {
+            existente.cantidad += cantidad;
+        } else {
+            carrito.push({ carroId, nombre, precio, cantidad });
         }
-        cart[carroId].cantidad = cantidad;
-        renderCart();
+
+        // Reset input
+        qtyInput.value = 0;
+
+        // Actualizar UI
+        actualizarCarrito();
     }
 
-    function renderCart() {
-        const container = document.getElementById("cartContainer");
-        container.innerHTML = "";
-
-        let total = 0;
-
-        Object.keys(cart).forEach(id => {
-            const item = cart[id];
-            const subtotal = item.cantidad * item.precio;
-            total += subtotal;
-
-            const row = document.createElement("div");
-            row.style.border = "1px solid #ddd";
-            row.style.padding = "10px";
-            row.style.marginBottom = "8px";
-
-            row.innerHTML = `
-                <div><b>CarroId:</b> ${id}</div>
-                <div>
-                    <b>Cantidad:</b>
-                    <input type="number" min="0" value="${item.cantidad}"
-                           onchange="updateQty(${id}, this.value)" />
-                </div>
-                <div><b>Precio:</b> ${money(item.precio)}</div>
-                <div><b>Subtotal:</b> ${money(subtotal)}</div>
-                <button type="button" onclick="removeFromCart(${id})">Quitar</button>
-            `;
-
-            container.appendChild(row);
-        });
-
-        document.getElementById("totalSpan").innerText = money(total);
-
-        // Convertir cart a lista de detalles que espera el backend
-        const detalles = Object.keys(cart).map(id => ({
-            carroId: parseInt(id, 10),
-            cantidad: cart[id].cantidad
-        }));
-
-        document.getElementById("DetallesJson").value = JSON.stringify(detalles);
+    function eliminarDelCarrito(carroId) {
+        carrito = carrito.filter(item => item.carroId !== carroId);
+        actualizarCarrito();
     }
 
-    // Inicializa hidden
-    renderCart();
+    function actualizarCarrito() {
+        const cartItems = document.getElementById('cartItems');
+        const cartCount = document.getElementById('cartCount');
+        const btnCheckout = document.getElementById('btnCheckout');
+
+        // Actualizar contador
+        const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+        cartCount.textContent = totalItems;
+
+        // Habilitar/deshabilitar botón
+        btnCheckout.disabled = carrito.length === 0;
+
+        // Renderizar items
+        if (carrito.length === 0) {
+            cartItems.innerHTML = `
+                    <div class="cart-empty">
+                        <i class="fas fa-shopping-basket"></i>
+                        <p>Tu carrito está vacío</p>
+                        <small>Agrega carros para comenzar</small>
+                    </div>
+                `;
+        } else {
+            cartItems.innerHTML = carrito.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.nombre}</div>
+                            <div class="cart-item-qty">${item.cantidad} x $${item.precio.toLocaleString('es-CL')}</div>
+                        </div>
+                        <div class="cart-item-price">$${(item.precio * item.cantidad).toLocaleString('es-CL')}</div>
+                        <button type="button" class="btn-remove" onclick="eliminarDelCarrito(${item.carroId})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+        }
+
+        // Calcular totales
+        const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+        const iva = subtotal * 0.19;
+        const total = subtotal + iva;
+
+        document.getElementById('subtotal').textContent = '$' + subtotal.toLocaleString('es-CL');
+        document.getElementById('iva').textContent = '$' + iva.toLocaleString('es-CL');
+        document.getElementById('total').textContent = '$' + total.toLocaleString('es-CL');
+
+        // Actualizar input hidden
+        document.getElementById('detallesJson').value = JSON.stringify(
+            carrito.map(item => ({ carroId: item.carroId, cantidad: item.cantidad }))
+        );
+    }
 </script>
